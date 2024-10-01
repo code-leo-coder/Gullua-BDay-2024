@@ -39,8 +39,8 @@
             posy = ev.pageY;
         }
         else if (ev.clientX || ev.clientY) 	{
-            posx = ev.clientX + body.scrollLeft + docEl.scrollLeft;
-            posy = ev.clientY + body.scrollTop + docEl.scrollTop;
+            posx = ev.clientX + body.scrollLeft + document.documentElement.scrollLeft;
+            posy = ev.clientY + body.scrollTop + document.documentElement.scrollTop;
         }
         return {x: posx, y: posy};
     }
@@ -65,7 +65,10 @@
     window.addEventListener('mousemove', ev => mousePos = getMousePos(ev));
 
     // update the touch position for mobile
-    window.addEventListener('touchmove', ev => mousePos = getTouchPos(ev));
+    window.addEventListener('touchmove', ev => {
+        ev.preventDefault(); // Prevent default scrolling/zooming behavior
+        mousePos = getTouchPos(ev);
+    }, { passive: false });
 
     // gets the distance from the current mouse/touch position to the last recorded position
     const getMouseDistance = () => MathUtils.distance(mousePos.x,mousePos.y,lastMousePos.x,lastMousePos.y);
