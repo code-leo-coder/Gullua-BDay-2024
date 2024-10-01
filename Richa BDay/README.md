@@ -1,2 +1,0 @@
-# Richa
-Take a ride
