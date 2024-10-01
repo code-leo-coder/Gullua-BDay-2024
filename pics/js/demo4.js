@@ -45,21 +45,35 @@
         return {x: posx, y: posy};
     }
 
+    // get the touch position (for mobile)
+    const getTouchPos = (ev) => {
+        let posx = 0;
+        let posy = 0;
+        if (ev.touches && ev.touches.length > 0) {
+            posx = ev.touches[0].clientX;
+            posy = ev.touches[0].clientY;
+        }
+        return { x: posx, y: posy };
+    };
+
     // mousePos: current mouse position
     // cacheMousePos: previous mouse position
-    // lastMousePos: last last recorded mouse position (at the time the last image was shown)
+    // lastMousePos: last recorded mouse position (at the time the last image was shown)
     let mousePos = lastMousePos = cacheMousePos = {x: 0, y: 0};
-    
-    // update the mouse position
+
+    // update the mouse position for PC
     window.addEventListener('mousemove', ev => mousePos = getMousePos(ev));
-    
-    // gets the distance from the current mouse position to the last recorded mouse position
+
+    // update the touch position for mobile
+    window.addEventListener('touchmove', ev => mousePos = getTouchPos(ev));
+
+    // gets the distance from the current mouse/touch position to the last recorded position
     const getMouseDistance = () => MathUtils.distance(mousePos.x,mousePos.y,lastMousePos.x,lastMousePos.y);
 
     class Image {
         constructor(el) {
             this.DOM = {el: el};
-            // image deafult styles
+            // image default styles
             this.defaultStyle = {
                 rotation: 0,
                 x: 0,
@@ -114,13 +128,13 @@
             requestAnimationFrame(() => this.render());
         }
         render() {
-            // get distance between the current mouse position and the position of the previous image
+            // get distance between the current mouse/touch position and the position of the previous image
             let distance = getMouseDistance();
-            // cache previous mouse position
+            // cache previous mouse/touch position
             cacheMousePos.x = MathUtils.lerp(cacheMousePos.x || mousePos.x, mousePos.x, 0.1);
             cacheMousePos.y = MathUtils.lerp(cacheMousePos.y || mousePos.y, mousePos.y, 0.1);
 
-            // if the mouse moved more than [this.threshold] then show the next image
+            // if the mouse/touch moved more than [this.threshold] then show the next image
             if ( distance > this.threshold ) {
                 this.showNextImage();
 
@@ -130,7 +144,7 @@
                 lastMousePos = mousePos;
             }
 
-            // check when mousemove stops and all images are inactive (not visible and not animating)
+            // check when mousemove or touchmove stops and all images are inactive (not visible and not animating)
             let isIdle = true;
             for (let img of this.images) {
                 if ( img.isActive() ) {
